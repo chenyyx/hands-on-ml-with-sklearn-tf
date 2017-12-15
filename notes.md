@@ -403,7 +403,21 @@ Logistic Regression model 可以推广到多分类。这就叫做 Softmax Regres
 
 #### 4.5、Exercise
 
-### Chapter 5、
+### Chapter 5、Support Vector Machines
+
+#### 5.1、Linear SVM Classification（线性 SVM 分类）
+
+最大间隔分隔：
+
+![](images/hands_29.png)
+
+#### 5.2、Nonlinear SVM Classification
+
+#### 5.3、SVM Regression
+
+#### 5.4、Under the Hood
+
+#### 5.5、Exercise
 
 ## Part II, Neural Networks and Deep Learning
 
