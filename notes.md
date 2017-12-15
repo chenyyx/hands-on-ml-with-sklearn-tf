@@ -213,6 +213,198 @@ sklearn 中比较常用的是 KNN 算法。
 #### 3.8、Exercise
 
 
+### Chapter 4、Training Models
+
+#### 4.1、Linear Regression
+
+线性回归的一般形式：
+
+![](images/hands_1.png)
+
+线性回归的向量形式：
+
+![](images/hands_2.png)
+
+衡量线性回归在训练集上拟合效果好坏的 cost function ：
+
+第一种是：
+
+![](images/hands_3.png)
+
+第二种是：
+
+![](images/hands_4.png)
+
+##### 4.1.1、The Normal Equation（正常方程）
+
+求出的回归系数的正常方程：
+
+![](images/hands_5.png)
+
+接下来，给出了自己实现的 线性回归 和 sklearn 实现的线性回归的代码。
+
+```python
+>>> from sklearn.linear_model import LinearRegression
+>>> lin_reg = LinearRegression()
+>>> lin_reg.fit(X, y)
+>>> lin_reg.intercept_, lin_reg.coef_(array([ 4.21509616]), array([[ 2.77011339]]))>>> lin_reg.predict(X_new)
+array([[ 4.21509616], [ 9.75532293]
+```
+
+##### 4.1.2、Computational Complexity（计算复杂度）
+
+计算线性回归的回归系数的正常方程的时候，需要计算矩阵的逆，但是求矩阵的逆是个很复杂的计算，如果数据的 features 变多的话，计算就会很慢很慢。下面介绍一个专门针对很多的 features 或者 很多的训练样本的一种 Linear Regression 的方法 —— 梯度下降（Gradient Descent）。
+
+
+#### 4.2、Gradient Descent
+
+梯度下降的一般思路是迭代地调整参数，以使成本函数最小化。
+
+首先我们用随机值填充 θ （这被称为随机初始化），然后逐渐改进，每次采取一步，每一步都试图降低成本函数（例如，MSE），直到算法收敛到最小。
+
+![](images/hands_6.png)
+
+下图显示了梯度下降遇到的 2 个主要问题：
+
+* 如果随机初始化从左边开始，那么它将收敛到局部最小值，不如全局最小值。
+* 如果从右边开始，那么跨越 plateau 将需要很长的时间，如果你 stop 的过早，你将永远达不到全局最小值。
+
+![](images/hands_7.png)
+
+幸运的是，线性回归模型的 MSE 成本函数碰巧是凸函数，这样就意味着没有局部最小值，只有一个全局最小值。并且它还是一个连续的函数，斜率不会突然变化。这两点能保证梯度下降能够接近全局最小值。
+
+还有一点，在使用梯度下降的时候，尽量保证所有的特征拥有相似的量级，（可以使用 sklearn 中的 StandardScaler 类）。
+
+##### 4.2.1、Batch Gradient Descent（批量梯度下降）
+
+损失函数的偏导数如下：
+
+![](images/hands_8.png)
+
+向量形式的偏导公式：
+
+![](images/hands_9.png)
+
+简要介绍了一下 Convergence Rate（收敛速度）。
+
+##### 4.2.2、Stochastic Gradient Descent（随机梯度下降）
+
+Batch Gradient Descent 的主要问题是在每次计算梯度的时候需要使用整个数据集，如果训练数据集很大的话，这个过程将变得很慢很耗时。作为改进，Stochastic Gradient Descent 每次随机挑选一个样本来计算梯度，计算很快（因为每次只使用一个样本来计算），虽然最终得到的参数值是好的，但是不是最优的。
+
+##### 4.2.3、Mini-batch Gradient Descent（小批量梯度下降）
+
+不像是之前的 Batch Gradient Descent（批量梯度下降，每次计算梯度都会使用整个数据集进行计算） 和 Stochastic Gradient Descent（随机梯度下降，每次计算梯度都只使用一个样本进行计算），Mini-batch Gradient Descent （小批量梯度下降）每次只从全部数据集中随机取出一小部分数据集来计算。
+
+Mini-batch Gradient Descent 优于 Stochastic Gradient Descent 的主要优点是，可以从矩阵运算的硬件优化中获得性能提升，尤其是使用 GPU 的时候。
+
+三种梯度下降的比较：
+
+![](images/hands_10.png)
+
+GD 算法与之前介绍的 Linear Regression 算法进行比较
+
+![](images/hands_11.png)
+
+![](images/hands_12.png)
+
+#### 4.3、Polynomial Regression（多项式回归）
+
+使用线性模型拟合非线性数据。一个简单的方法增加每个 feature 的量级作为新特征，然后在这个特征的扩展数据集上训练一个线性模型。这种技术我们称之为 多项式回归。
+
+示例演示生成一些非线性数据，使用 sklearn 的 PolynomialFeatures 类来实现将训练集数据转化为新的特征，然后我们使用 sklearn 的 LinearRegression 方法来拟合新的训练数据集。
+
+#### 4.4、Learning Curves（学习曲线）
+
+了解模型的拟合程度，我们可以使用 交叉验证。如果模型在 training set 上表现很好，而在 test set 上表现很差，那么就有可能出现了过拟合。如果在 training set 和 test set 上都表现得很差，那就是出现了欠拟合。
+
+另一种方法就是 learning curve：
+
+![](images/hands_13.png)
+
+后面介绍了 The Bias/Variance Tradeoff（偏差/方差的权衡）
+
+#### 4.3、Regularized Linear Models（正则化线性模型）
+
+减少过拟合的方法最好的办法是正则化，也就是约束。例如，多项式回归，减少多项式的次数就可以做到约束。对于线性模型，可以约束它的权重。
+
+##### 4.3.1、Ridge Regression
+
+Ridge Regression（也叫作 Tikhonov regularization），它的损失函数为：
+
+![](images/hands_14.png)
+
+Ridge Regression 求回归系数的等式：
+
+![](images/hands_15.png)
+
+sklearn 中使用如下：from sklearn.linear_model import Ridge
+
+##### 4.3.2、Lasso Regression
+
+全称是 Least Absolute Shrinkage and Selection Operator Regression,它的损失函数为：
+
+![](images/hands_16.png)
+
+Lasso Regression 求回归系数的等式：
+
+![](images/hands_17.png)
+
+##### 4.3.3、Elastic Net
+
+Elastic Net 是 Ridge Regression 和 Lasso Regression 的中间地带。是 岭回归和 lasso 的简单组合，可以控制混合比率 r 。当 r = 0时，Elastic Net 相当于 岭回归，当 r = 1时，相当于 Lasso 回归。其损失函数为：
+
+![](images/hands_18.png)
+
+使用 sklearn 调用如下： from sklearn.linear_model import ElasticNet
+
+##### 4.3.4、Early Stopping
+
+![](images/hands_19.png)
+
+#### 4.4、Logistic Regression
+
+##### 4.4.1、Estimating Probabilities（估计概率）
+
+logistic Regression 的向量形式的：
+
+![](images/hands_20.png)
+
+logistic 使用的函数（sigmoid 函数）：
+
+![](images/hands_21.png)
+
+##### 4.4.2、Training and Cost Function（训练和损失函数）
+
+单个训练样本的损失函数：
+
+![](images/hands_22.png)
+
+![](images/hands_23.png)
+
+![](images/hands_24.png)
+
+##### 4.4.3、Decision Boundaries（决策边界）
+
+在鸢尾花数据集上查看 Logistic Regression 的决策边界。
+
+![](images/hands_25.png)
+
+##### 4.4.4、Softmax Regression
+
+Logistic Regression model 可以推广到多分类。这就叫做 Softmax Regression 或者 Multinomial Logistic Regression 。
+
+![](images/hands_26.png)
+
+![](images/hands_27.png)
+
+我们会用到交叉熵：
+
+![](images/hands_28.png)
+
+#### 4.5、Exercise
+
+### Chapter 5、
+
 ## Part II, Neural Networks and Deep Learning
 
 
