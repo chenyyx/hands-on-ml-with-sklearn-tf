@@ -411,16 +411,155 @@ Logistic Regression model 可以推广到多分类。这就叫做 Softmax Regres
 
 ![](images/hands_29.png)
 
+SVM 对特征的量级很敏感。
+
+##### 5.1.1、 Soft Margin Classification
+
+如果我们严格规定所有的样本都远离决策边界，并且所有的样本都在分在正确的边，这叫做 hard margin classification 。但是这有两个问题：
+
+* 要分类的数据必须是线性可分的。
+* 对于异常值比较敏感。
+
+为了避免上面的两个问题，我们选择更加灵活的模型，目的是保持 margin 尽可能大和限制边缘违规行为（这里的违规行为指，在决策边界很近的地方将数据分类错误，设置是分到了错误的一边）之间找到一个平衡点。这个叫做 soft margin classification 。在 sklearn 中有一个 C 超参数可以来调整这个平衡。
+
 #### 5.2、Nonlinear SVM Classification
+
+处理线性不可分的数据时，一个可行的做法是：加更多的特征，比如在 Chapter 4 中的多项式 feature 。这可以将线性不可分数据转化为线性可分。sklearn 代码为：from sklearn.preprocessing import PolynomialFeature
+
+##### 5.2.1、Ploynomial Kernel（多项式 kernel）
+
+添加多项式特征，可以很简单地实现，并在机器学习算法中都能表现的较好。但是较低的量级不能在很复杂的数据集上实现，而较高的量级反而会产生很多的 feature ，导致算法运行很慢。
+
+这样的也算是 SVM 的一个 kernel trick 吧。
+
+##### 5.2.2、Adding Similarity Features（添加相似的特征）
+
+解决非线性问题的另一个技术是添加使用相似性函数计算的特征，该函数测量每个实例与特定 landmark 相似的程度。我们定义一个相似性计算函数 Gaussian Radial Basis Function（RBF）。
+
+##### 5.2.3、Gaussian RBF Kernel
+
+相似性特征与多项式特征类似，都在机器学习算法上比较有用，但是消耗的计算资源要更大一些。在 sklearn 中可以直接使用 ("svm_clf", SVC(kernel="rbf", gamma=5, C=0.001)) 这种来调用。
+
+##### 5.2.4、Computation Complexity（计算复杂性）
+
+LinearSVC 是在 liblinear library （对 linear SVM 的最优化算法的实现）基础上的。
+
+![](images/hands_30.png)
 
 #### 5.3、SVM Regression
 
-#### 5.4、Under the Hood
+SVM 不仅支持线性和非线性的分类任务，还支持线性和非线性的回归。
+
+可以使用 sklearn 中的 LinearSVR 或者 SVR 类。
+
+#### 5.4、Under the Hood（底层理解）
+
+##### 5.4.1、Decision Function and Predictions
+
+![](images/hands_31.png)
+
+##### 5.4.2、Training Objective（训练目的）
+
+![](images/hands_32.png)
+
+![](images/hands_33.png)
+
+##### 5.4.3、Quadratic Programming
+
+硬边界和软边界问题都是二次规划问题（Quadratic Programming）
+
+![](images/hands_34.png)
+
+![](images/hands_35.png)
+
+##### 5.4.4、The Dual problem（对偶问题）
+
+![](images/hands_36.png)
+
+![](images/hands_37.png)
+
+##### 5.4.5、Kernelized SVM
+
+![](images/hands_38.png)
+
+![](images/hands_39.png)
+
+![](images/hands_40.png)
+
+![](images/hands_41.png)
+
+![](images/hands_42.png)
+
+##### 5.4.6、Online SVMs
+
+![](images/hands_43.png)
 
 #### 5.5、Exercise
 
+### Chapter 6、Decision Tree
+
+1. 包含 m 个叶子节点的平衡二叉树的深度等于 log 以 2 为底，m 的3 次方，四舍五入。一个二元决策树，如果训练没有限制的话，在训练结束时，每个训练实例代表一个叶子节点。
+
+2. 节点的 Gini 系数通常是低于其父母节点的。这被 CART 训练算法的 损失函数来保证的。该算法将每个节点分开，以最小化其孩子基尼的加权总和。
+
+3. 如果一个决策树对训练数据集进行了过拟合。可以通过减少 max_depth 参数来修改。因为这可以约束模型，正则化。
+
+4. 决策树不关系数据是否进行了缩放，所以如果决策树欠拟合了，进行数据特征缩放将会白白浪费时间。
+
+5. 在数据量不是很大的情况下（几千条数据），对训练数据集进行提前排序会加速训练过程。如果数据量大于等于 10w 条，设置 presort=true 将会使训练过程变慢。
+
+### CHapter 7、Ensemble Learning and Random Forests
+
+1. 如果你训练了几个比较好的模型，那将这几个模型组合起来进行投票机制，可能会产生更好的效果。
+
+2. hard voting 分类器只会计算每个分类器模型的最终结果并取投票数最多的那个结果。soft voting 分类器计算每个类别的平均估计类别概率，并以最高概率挑选最终结果。
+
+3. 加速 bagging 的训练过程可以将其分布式部署到几个服务器上，因为它们之间都是独立的。
+
+4. 使用 out-of-bag 评估，在集成方法中的每个 predictor 都是使用不是训练数据集的数据进行评估的。
+
+5. 在 RF 中训练一棵树的时候，是使用完整数据集的随机子数据集，并且数据集的特征都是使用的随机阈值进行训练的。
+
+6. 如果你的 AdaBoost 集成方法欠拟合，你可以考虑增加估计器的数量或者减少正则化的超参数。
+
+7. 如果 Gradient Boosting 过拟合了数据，建议减少学习率，或者提前停止来找到预测器的最合适的数量。
+
+### Chapter 8、Dimensionality Reduction（降维）
+
+#### 8.1、The Curse of Dimensionality
+
+#### 8.2、Main Approaches for Dimensionality Reduction
+
+##### 8.2.1、Project
+
+##### 8.2.2、Manifold Learning
+
+#### 8.3、PCA
+
+#### 8.4、kernel PCA
+
+#### 8.5、LLE
+
+#### 8.6、Other Dimensionality Reduction Techniques
+
+#### 8.7、Exercise
+
+
 ## Part II, Neural Networks and Deep Learning
 
+### Chapter 9、Up and Running with TensorFlow
 
+### Chapter 10、Introduction to Artificial Neural Networks
 
+### Chapter 11、Training Deep Neural Nets
+
+### Chapter 12、Distributing TensorFlow Across Devices and Servers
+
+### Chapter 13、Convolutional Neural Networks
+
+### Chapter 14、Recurrent Neural Networks
+
+### Chapter 15、Autoencoders
+
+### Chapter 16、Reinforcement Learning
 
